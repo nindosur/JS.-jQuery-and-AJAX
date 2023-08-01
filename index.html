@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <style>
+        /* 1 */
+        .menu {
+            display: none;
+        }
+        .menu.open{
+            display: block;
+        }
+        .hamburger{
+            font-size: 40px;
+            cursor: pointer;
+            /* border: 1px solid black;
+            padding-left: 10px;
+            margin-right: 1858px; */
+        }
+        .hamburger.open::before{
+            content: "\00D7"           "OPEN";
+        }
+        .hamburger.closed::before{
+            content: "\2261"            "CLOSED";
+        }
+        li{
+            list-style-type: none;
+            color: green;
+            font-size: 25px;
+        }
+        li:hover{
+            text-decoration: underline;
+            color: grey;
+            list-style-type: square;
+        }
+        ul{
+            border: 1px solid black;
+            margin-right: 1700px;
+        }
+        /* "\00D7" */
+        .genre-list {
+            display: none;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .genre-list.open {
+            display: flex;
+        }
+        .genre-item {
+            margin-right: 20px;
+            cursor: pointer;
+            color: green;
+            font-size: 25px;
+        }
+        .genre-item.active {
+            text-decoration: underline;
+            color: black;
+        }
+        .books {
+            margin-top: 20px;
+        }
+        .book {
+            margin-bottom: 20px;
+        }
+        .book img {
+            max-width: 200px;
+        }
+        .book-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .book {
+            width: 25%;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            padding: 0 10px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<!-- 1 -->
+<h2>Задание 1</h2>
+<div class="hamburger closed"></div>
+<div class="menu">
+    <ul>
+        <li>About Us</li>
+        <li>Testimonials</li>
+        <li class="books-link">Books</li>
+        <li>Contact Us</li>
+    </ul>
+</div>
+
+<!-- 2 -->
+<h2>Задание 2</h2>
+<button class="btn btn-read" id="readers-plus" data-num="1024">
+    That's great!
+</button>
+<span id="num-of-readers"></span>
+
+<a href="https://openlibrary.org/borrow/ia/hpmor?ref=ol" class="my-link" target="_blank"></a>
+
+<!-- 3 -->
+<h2>Задание 3</h2>
+<p>Нажми 'Books' в меню сверху.</p>
+<div class="genre-list">
+    <div class="genre-item" data-category="mystery_and_detective_stories">Mistery, Detective</div>
+    <div class="genre-item" data-category="romance">Romance</div>
+    <div class="genre-item" data-category="poetry">Poetry</div>
+    <div class="genre-item" data-category="fantasy">Fantasy</div>
+</div>
+
+<div class="books">
+    
+</div>
+
+
+<script>
+// 1, 3
+$(document).ready(function () {
+    $('.hamburger').click(function () {
+        $('.menu').slideToggle();
+        $(this).toggleClass('open closed');
+    });
+});
+
+$(document).ready(function () {
+    function loadBooksByGenre(genre) {
+        $('.books').empty(); 
+
+        $.getJSON('https://openlibrary.org/subjects/' + genre + '.json', function (data) {
+            var bookContainer = $('<div class="book-container"></div>');
+
+            $.each(data.works, function (index, book) {
+                var title = book.title;
+                var author = (book.authors && book.authors[0]) ? book.authors[0].name : 'Неизвестный автор.';
+                var coverId = (book.cover_id) ? book.cover_id : 'nocover';
+                var coverUrl = 'https://covers.openlibrary.org/b/id/' + coverId + '-L.jpg';
+                var bookItem = `
+                    <div class="book">
+                        <h3>${title}</h3>
+                        <p>Author: ${author}</p>
+                        <img src="${coverUrl}" alt="${title}">
+                    </div>`;
+                bookContainer.append(bookItem);
+
+                if ((index + 1) % 4 === 0 || index === data.works.length - 1) {
+                    $('.books').append(bookContainer);
+                    bookContainer = $('<div class="book-container"></div>');
+                }
+            });
+        });
+    }
+
+    $('.genre-item').click(function (event) {
+        event.stopPropagation(); 
+        $('.genre-item').removeClass('active'); 
+        $(this).addClass('active'); 
+        var selectedGenre = $(this).data('category'); 
+        loadBooksByGenre(selectedGenre); 
+    });
+});
+
+$('.books-link').click(function (event) {
+    event.stopPropagation(); 
+    $('.genre-list').toggleClass('open');
+});
+
+
+// 2
+$(document).ready(function(){
+    $('#readers-plus').click(function(){
+        var num = +($(this).data('num')) + 1;
+        $(this).data('num', num);
+        $('#num-of-readers').text('You are ' + num + ' reader now.');
+
+        setTimeout(function(){
+            var redirectUrl = $('.my-link').attr('href');
+            location.href = redirectUrl;
+        }, 1500);
+    });
+});
+
+
+</script>
+</body>
+</html>
